@@ -2,7 +2,7 @@
 .idea
 
 # Python
-__pyache__
+__pycache__
 
 # Enviroment
 .venv
