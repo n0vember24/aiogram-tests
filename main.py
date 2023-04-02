@@ -5,7 +5,7 @@ import aiogram.utils.markdown as md
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
+from aiogram.dispatcher.filters import Text, RegexpCommandsFilter
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import Message, InputTextMessageContent, InlineQueryResultArticle, InlineQuery, ChatActions, \
     ReplyKeyboardRemove, ReplyKeyboardMarkup, ParseMode
@@ -19,16 +19,33 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
+@dp.message_handler(RegexpCommandsFilter(regexp_commands=['start ([0-9]*)']))
+async def send_welcome(message: Message, regexp_command):
+    await message.reply(f"You have requested an item with id <code>{regexp_command.group(1)}</code>", ParseMode.HTML)
+
+
+@dp.message_handler(commands='deeplink')
+async def create_deeplink(message: Message):
+    bot_user = await bot.me
+    bot_username = bot_user.username
+    deeplink = f'https://t.me/{bot_username}?start={message.from_user.id}'
+    text = (
+        f'Either send a command /item_1234 or follow this link {deeplink} and then click start\n'
+        'It also can be hidden in a inline button\n\n'
+        f'Or just send <code>/start {message.from_user.id}</code>'
+    )
+    await message.reply(text, disable_web_page_preview=True)
+
+
 class Form(StatesGroup):
     name = State()
     age = State()
     gender = State()
 
 
-@dp.message_handler(commands='start')
+@dp.message_handler(commands='/state')
 async def cmd_start(message: Message):
     await Form.name.set()
-
     await message.reply("Добро пожаловать в наш бот!\nДля продолжения введите своё имя:")
 
 
