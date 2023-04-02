@@ -19,6 +19,20 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
+@dp.message_handler(commands=['language'])
+async def check_language(message: Message):
+    locale = message.from_user.locale
+
+    await message.reply(md.text(
+        md.bold('Info about your language:'),
+        md.text('🔸', md.bold('Code:'), md.code(locale.language)),
+        md.text('🔸', md.bold('Territory:'), md.code(locale.territory or 'Unknown')),
+        md.text('🔸', md.bold('Language name:'), md.code(locale.language_name)),
+        md.text('🔸', md.bold('English language name:'), md.code(locale.english_name)),
+        sep='\n',
+    ), ParseMode.MARKDOWN)
+
+
 @dp.message_handler(RegexpCommandsFilter(regexp_commands=['start ([0-9]*)']))
 async def send_welcome(message: Message, regexp_command):
     await message.reply(f"You have requested an item with id <code>{regexp_command.group(1)}</code>", ParseMode.HTML)
